@@ -1,0 +1,9 @@
+pandas
+requests
+supabase
+python-dotenv  # Usado para gerir variáveis de ambiente, presumo que esteja relacionado ao uso de 'os' para aceder variáveis de ambiente
+openai
+python-docx  # Para 'docx'
+numpy
+plottly
+scikit-learn

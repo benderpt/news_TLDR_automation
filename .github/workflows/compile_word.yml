@@ -1,0 +1,81 @@
+name: rotina sexta 11 de compilacao relatorio
+
+on:
+  schedule:
+    - cron: '0 11 * * 5'
+
+jobs:
+  run-script-and-commit-changes:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        persist-credentials: true
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install supabase pandas python-docx
+
+    - name: Run the script
+      env:
+        SUPABASE_API_KEY: ${{ secrets.SUPABASE_API_KEY }}
+      run: python compilacao_word.py
+
+    - name: Check for news flag
+      id: check-news-flag
+      run: |
+        if [ -f flag_noticias.txt ]; then
+          echo "::set-output name=status::$(cat flag_noticias.txt)"
+        else
+          echo "::set-output name=status::nao"
+        fi
+
+    - name: Send report by email when there are news
+      if: steps.check-news-flag.outputs.status == 'sim'
+      uses: dawidd6/action-send-mail@v2
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{ secrets.EMAIL_USERNAME }}
+        password: ${{ secrets.EMAIL_PASSWORD }}
+        from: ${{ secrets.EMAIL_USERNAME }}
+        subject: Relatório Compilado
+        to: team@email.com
+        body: O relatório dos media semanal foi compilado com sucesso. Encontra-se anexado.
+        attachments: relatorio_media_semanal.docx
+
+    - name: Send no news email
+      if: steps.check-news-flag.outputs.status == 'nao'
+      uses: dawidd6/action-send-mail@v2
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{ secrets.EMAIL_USERNAME }}
+        password: ${{ secrets.EMAIL_PASSWORD }}
+        from: ${{ secrets.EMAIL_USERNAME }}
+        subject: Sem notícias esta semana
+        to: team@email.com
+        body: Esta semana não houve registo de notícias para reportar.
+
+    - name: Commit changes
+      if: steps.check-news-flag.outputs.status == 'sim'
+      run: |
+        git config --local user.email "hugoalmeidamoreira@gmail.com"
+        git config --local user.name "your username"
+        git add -A
+        git diff-index --quiet HEAD || (git commit -a -m "Atualizado relatório semanal com dados mais recentes" --allow-empty)
+
+    - name: Push changes
+      if: steps.check-news-flag.outputs.status == 'sim'
+      uses: ad-m/github-push-action@v0.6.0
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: main

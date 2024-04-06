@@ -1,0 +1,44 @@
+name: rotina-diaria Cision RSS às 21, 22 e 23
+
+on:
+  schedule:
+    - cron: '0 22 * * *' # 20:00, 21:00 e 22:00 em Lisboa
+
+jobs:
+  run-script-and-commit-changes:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        persist-credentials: true
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas requests supabase
+
+    - name: Run the script
+      env:
+        SUPABASE_API_KEY: ${{ secrets.SUPABASE_API_KEY }}
+      run: python main.py
+      # Certifique-se de que o caminho está correto
+
+    - name: Commit changes
+      run: |
+        git config --local user.email "hugoalmeidamoreira@gmail.com"
+        git config --local user.name "Bender"
+        git add -A
+        git diff-index --quiet HEAD || (git commit -a -m "updated logs" --allow-empty)
+
+    - name: push changes
+      uses: ad-m/github-push-action@v0.6.0
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: main
