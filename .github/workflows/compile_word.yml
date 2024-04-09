@@ -2,7 +2,7 @@ name: rotina sexta 11 de compilacao relatorio
 
 on:
   schedule:
-    - cron: '0 11 * * 5'
+      - cron: '* * * * *' 
 
 jobs:
   run-script-and-commit-changes:
