@@ -1,7 +1,7 @@
 name: rotina sexta 9 de resumo de notícias
 on:
   schedule:
-    - cron: '0 9 * * 5'
+      - cron: '* * * * *' 
 
 jobs:
   run-script-and-commit-changes:
