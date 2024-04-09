@@ -2,7 +2,7 @@ name: rotina-diaria Cision RSS às 21, 22 e 23
 
 on:
   schedule:
-    - cron: '* * * * *' # 20:00, 21:00 e 22:00 em Lisboa
+    - cron: '' # 20:00, 21:00 e 22:00 em Lisboa
 
 jobs:
   run-script-and-commit-changes:
